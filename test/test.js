@@ -1,51 +1,71 @@
 var assert = require("assert");
+var Mocket = require("../mocket.js");
 
 function newContext() {
-  return require("../mocket.js").Mocket();
+  return Mocket.Mocket();
+}
+
+module.exports.testArrayCompare = function() {
+  assert.ok([].equals([]));
+  assert.ok([1,2,3].equals([1,2,3]));
+  assert.ok([1,2,[3,"IV", "five"]].equals([1,2,[3,"IV", "five"]]));
+  assert.ok(![].equals(""));
+  assert.ok(![1].equals([1,2]));
+  assert.ok(![ 1, 'two', [ 'III' ] ].equals([ 1, 2, [ 'three' ] ]));
+}
+
+function verifyMocksOK(mocket) {
+  assert.ok(mocket.verifyMocks());
+  assert.doesNotThrow(function() {mocket.assertMocks()}, Mocket.MockAssertionError);
+}
+
+function verifyMocksNotOK(mocket) {
+  assert.ok(!mocket.verifyMocks());
+  assert.throws(function() {mocket.assertMocks()}, Mocket.MockAssertionError);
 }
 
 module.exports.testCallMany = function() {
   var mocket = newContext();
   var m = mocket.createMock("one");
   m.expects("func");
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
   m.func();
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
   m.func();
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
 }
 
 module.exports.testCallOnce = function() {
   var mocket = newContext();
   var m = mocket.createMock("one");
   m.expects("func").once();
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
   m.func();
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
   m.func();
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
 }
 
 module.exports.testCallN = function() {
   var mocket = newContext();
   var m = mocket.createMock("one");
   m.expects("func").times(3);
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
   m.func();
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
   m.func();
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
   m.func();
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
 }
 
 module.exports.testCallNever = function() {
   var mocket = newContext();
   var m = mocket.createMock("one");
   m.expects("func").never();
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
   m.func();
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
 }
 
 module.exports.testAllowsNotCalled = function() {
@@ -54,14 +74,14 @@ module.exports.testAllowsNotCalled = function() {
   m.allows("allowed");
   m.allowed();
   m.allowed();
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
 }
 
 module.exports.testAllowsNotCalled = function() {
   var mocket = newContext();
   var m = mocket.createMock("one");
   m.allows("allowed");
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
 }
 
 module.exports.testWithArgs = function() {
@@ -69,9 +89,29 @@ module.exports.testWithArgs = function() {
   var m = mocket.createMock("one");
   m.expects("func").passing("hello", 1);
   m.func("hello", 1);
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
+  m.func("goodbye");
+  verifyMocksNotOK(mocket);
+}
+
+module.exports.testWithArrayArgs = function() {
+  var mocket = newContext();
+  var m = mocket.createMock("one");
+  m.expects("func").passing("hello", [1,2,["three"]]);
+  m.func("hello", [1,2,["three"]]);
+  verifyMocksOK(mocket);
   m.func();
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
+}
+
+module.exports.testFailsWithArrayArgs = function() {
+  var mocket = newContext();
+  var m = mocket.createMock("one");
+  m.expects("func").passing("hello", [1,"two",["III"]]);
+  m.func("hello", [1,"two",["III"]]);
+  verifyMocksOK(mocket);
+  m.func("hello", [1,2,["three"]]);
+  verifyMocksNotOK(mocket);
 }
 
 module.exports.testDifferentArgs = function() {
@@ -80,9 +120,9 @@ module.exports.testDifferentArgs = function() {
   m.expects("func").passing("hello", 1).once();
   m.expects("func").passing("goodbye", 2).once();
   m.func("hello", 1);
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
   m.func("goodbye", 2);
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
 }
 
 module.exports.testReturn = function() {
@@ -102,7 +142,7 @@ module.exports.testReturnDifferentArgs = function() {
   assert.equal("first", ret1);
   var ret2 = m.func("goodbye", 2);
   assert.equal("second", ret2);
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
 }
 
 module.exports.testStub = function() {
@@ -116,7 +156,7 @@ module.exports.testStub = function() {
   var ret = m.func();
   assert.ok(called);
   assert.equal("Called!", ret);
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
 }
 
 module.exports.testStubObject = function() {
@@ -134,7 +174,7 @@ module.exports.testStubObject = function() {
   var ret = m.func();
   assert.ok(stub.called);
   assert.equal("Called!", ret);
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
 }
 
 module.exports.testAnyArgs = function() {
@@ -144,7 +184,7 @@ module.exports.testAnyArgs = function() {
   m.func();
   m.func("A string");
   m.func("Lots", "of", -1, ["loverly", "args"]);
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
 }
 
 module.exports.testAnythingArg = function() {
@@ -152,11 +192,11 @@ module.exports.testAnythingArg = function() {
   var m = mocket.createMock("one");
   m.expects("func").passing("hello", mocket.ANYTHING);
   m.func("hello", 123);
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
   m.func("hello", [1,2,3]);
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
   m.func("goodbye", [1,2,3]);
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
 }
 
 module.exports.testInstanceOfNumberArg = function() {
@@ -164,9 +204,9 @@ module.exports.testInstanceOfNumberArg = function() {
   var m = mocket.createMock("one");
   m.expects("func").passing("hello", mocket.any('number'));
   m.func("hello", 123);
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
   m.func("hello", [1,2,3]);
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
 }
 
 module.exports.testInstanceOfCustomObjectArg = function() {
@@ -176,9 +216,9 @@ module.exports.testInstanceOfCustomObjectArg = function() {
   var m = mocket.createMock("one");
   m.expects("func").passing("hello", mocket.any(Foo));
   m.func("hello", new Foo());
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
   m.func("hello", new Bar());
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
 }
 
 module.exports.testInstanceMatcherArg = function() {
@@ -189,7 +229,7 @@ module.exports.testInstanceMatcherArg = function() {
   m.expects("func").passing("hello", function(a) {return a === 1 || a === 2});
   m.func("hello", 1);
   m.func("hello", 2);
-  assert.ok(mocket.verifyMocks());
+  verifyMocksOK(mocket);
   m.func("hello", 3);
-  assert.ok(!mocket.verifyMocks());
+  verifyMocksNotOK(mocket);
 }

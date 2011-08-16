@@ -1,13 +1,33 @@
 "use strict";
 
-
-// mock.expects("aFunc").passing(arg,arg...).times(3).returning(123);
-// mock.expects("aFunc").passing(arg,arg...).never();
-// mock.expects("aFunc").passing(arg,arg...).times(3).as(function(){});
-
+/*
+*/
 
 function Mocket() {
   return new MockContext();
+}
+
+Array.prototype.equals = function(obj) {
+  if (!(obj instanceof Array)) return false;
+  if (obj === this) return true;
+  if (obj.length !== this.length) return false;
+
+  for (var i = 0; i < this.length; i++) {
+    if (this[i].equals && typeof this[i].equals === 'function') {
+      if (!this[i].equals(obj[i])) return false;
+    } else {
+      if (this[i] !== obj[i]) return false;
+    }
+  }
+  
+  return true;
+};
+
+Array.prototype.find = function(fn) {
+  for (var i = 0; i < this.length; i++) {
+    if (fn(this[i])) return this[i];
+  }
+  return undefined;
 }
 
 Mocket.MANY = -1;
@@ -15,7 +35,9 @@ Mocket.ANYTHING = {
   matches  : function() {return true},
   toString : function() {return "ANYTHING"}
 };
-Mocket.ANYARGS  = { toString : function() {return "ANYARGS"}};
+Mocket.ANYARGS  = {
+  toString : function() {return "ANYARGS"}
+};
 
 module.exports.Mocket = Mocket;
 
@@ -64,21 +86,24 @@ MockContext.prototype = {
       okCalls : [],
       failCalls : [],
       unexpectedCalls : [],
-      ok: function(e) {this.okCalls.push(e)},
-      fail: function(e) {this.failCalls.push(e)},
-      unexpected: function(a) {this.unexpectedCalls.push(a)}
+      ok: function(e) {this.okCalls.push(e.toString())},
+      fail: function(e) {this.failCalls.push(e.toString())},
+      unexpected: function(a) {this.unexpectedCalls.push(a.name + argumentsToString(a.args))}
     };
     if (!this.verifyMocks(collector)) {
-      throw new MockAssertionError()
+      throw new MockAssertionError(collector);
     }
   }
 }
 
-function MockAssertionError(message) {
+function MockAssertionError(collector) {
   this.prototype = Error.prototype;
   this.name = "MockAssertionError";
-  this.message = message || "(unknown)";
+  this.collector = collector;
+  this.message = JSON.stringify(collector);
 }
+
+module.exports.MockAssertionError = MockAssertionError;
 
 function Mock(name) {
   this.name = name;
@@ -93,20 +118,15 @@ Mock.prototype = {
     this.calls[methodName].push(e);
 
     this[methodName] = function foo() {
-      var returned = false;
-      var ret;
-      this.calls[methodName].forEach(function(ex) {
-        if (ex.matches(foo.arguments)) {
-          returned = true;
-          ret =  ex.call.apply(ex, arguments);
-        }
-      });
-      if (returned) {
-        return ret;
+      var args = arguments;
+      var ex = this.calls[methodName].find(function(x) {return x.matches(args);});
+      if (ex) {
+        return ex.call.apply(ex, arguments);
       } else {
         this.unexpected.push({name : methodName, args: arguments});
       }
     };
+    
     return e;
   },
   allows : function(methodName) {
@@ -162,12 +182,16 @@ Expectation.prototype = {
     if (args.length !== this.args.length) return false;
 
     for (var i = 0; i < args.length; i++) {
-      if (typeof this.args[i] === 'function') {
-        if (!this.args[i](args[i])) return false;
-      } else if (this.args[i].hasOwnProperty("matches")) {
-        if (!this.args[i].matches(args[i])) return false;
+      var arg = this.args[i];
+      var passed = args[i];
+      if (typeof arg === 'function') {
+        if (!arg(passed)) return false;
+      } else if (arg.hasOwnProperty("matches")) {
+        if (!arg.matches(passed)) return false;
+      } else if (arg.equals && typeof (arg.equals === 'function')) {
+        if (!arg.equals(passed)) return false;
       } else {
-        if (this.args[i] !== args[i]) return false;
+        if (arg !== passed) return false;
       }
     };
     return true;
@@ -188,6 +212,6 @@ Expectation.prototype = {
     var expected = this.callsExpected === Mocket.MANY ? "n" : this.callsExpected;
     return "EXPECTATION " + this.mock.name + "." + this.name + argumentsToString(this.args)
       + " [" + expected  + "/" + this.numcalls + "] "
-      + (this.fulfilled ? "ok" : "FAIL");
+      + (this.fulfilled() ? "ok" : "FAIL");
   }
 }

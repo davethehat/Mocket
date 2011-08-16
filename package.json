@@ -1,0 +1,19 @@
+{
+  "author": "David Harvey <david@teamsandtechnology.com> (http://www.teamsandtechnology.com)",
+  "name": "mocket",
+  "description": "Mocking library for Node/JS, in the spirit of Mockito",
+  "version": "0.0.1",
+  "homepage": "https://github.com/davethehat/mocket",
+  "repository": {
+    "url": ""
+  },
+  "main": "mocket.js",
+  "scripts": {
+    "test": "expresso test/test.js"
+  },
+  "engines": {
+    "node": "~v0.4.8"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
