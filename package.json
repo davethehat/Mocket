@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "homepage": "https://github.com/davethehat/mocket",
   "repository": {
-    "url": ""
+    "url": "git@github.com:davethehat/Mocket.gits"
   },
   "main": "mocket.js",
   "scripts": {

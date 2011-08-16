@@ -155,7 +155,8 @@ function Expectation(mock, name) {
   this.args = [];
   this.impl = function() {}
   this.numcalls = 0;
-  this.callsExpected = Mocket.MANY;
+  this.callsExpectedMin = Mocket.MANY;
+  this.callsExpectedMax = Mocket.MANY;
 }
 
 Expectation.prototype = {
@@ -163,9 +164,11 @@ Expectation.prototype = {
     this.args = arguments;
     return this;
   },
-  times     : function(n) { this.callsExpected = n; return this; },
-  once      : function() { return this.times(1);},
-  never     : function() { return this.times(0);},
+  times     : function(n) { this.callsExpectedMin = this.callsExpectedMax = n; return this; },
+  once      : function()  { return this.times(1);},
+  never     : function()  { return this.times(0);},
+  atLeast   : function(n) { this.callsExpectedMin = n; return this; },
+  atMost    : function(n) { this.callsExpectedMax = n; return this; },
   returning : function(value) { return this.as( function() { return value;})},
   as        : function(fn) {this.impl = fn},
   call      : function() {
@@ -205,13 +208,42 @@ Expectation.prototype = {
     }
     return ok;
   },
+  expectingMany : function() {
+      return this.callsExpectedMin === Mocket.MANY && this.callsExpectedMax === Mocket.MANY;
+  },
+  expectingN : function() {
+      return !this.expectingMany() && this.callsExpectedMin === this.callsExpectedMax;
+  },
   fulfilled  : function() {
-    return this.callsExpected === Mocket.MANY && this.numcalls > 0 || this.callsExpected === this.numcalls;
+    if (this.expectingMany()) {
+      return this.numcalls > 0;
+    }
+    var ok = true;
+    if (this.callsExpectedMin !== Mocket.MANY) {
+      ok = this.numcalls >= this.callsExpectedMin;
+    }
+    if (ok && this.callsExpectedMax !== Mocket.MANY) {
+      ok = this.numcalls <= this.callsExpectedMax;
+    }
+    return ok;
+  },
+  rangeAsString : function() {
+    if (this.expectingMany()) return "n";
+    if (this.expectingN()) return "" + this.callsExpectedMin;
+
+    var ret = "";
+    if (this.callsExpectedMin !== Mocket.MANY) {
+      ret += this.callsExpectedMin;
+    }
+    ret += "-";
+    if (this.callsExpectedMax !== Mocket.MANY) {
+      ret += this.callsExpectedMax;
+    }
+    return ret;
   },
   toString   : function() {
-    var expected = this.callsExpected === Mocket.MANY ? "n" : this.callsExpected;
     return "EXPECTATION " + this.mock.name + "." + this.name + argumentsToString(this.args)
-      + " [" + expected  + "/" + this.numcalls + "] "
+      + " [" + this.rangeAsString() + "/" + this.numcalls + "] "
       + (this.fulfilled() ? "ok" : "FAIL");
   }
 }
