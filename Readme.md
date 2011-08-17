@@ -39,9 +39,10 @@ SOFTWARE.
 
 Require mocket, create a context:
 
+```javascript
    var mocket = require('mocket');
    var context = new mocket.Mocket();
-   
+```
 Create a mock:
 
    var mock = context.createMock();
