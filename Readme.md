@@ -5,7 +5,7 @@ Mocking library for [nodejs](http://nodejs.org)
 ## Features
 
   - simple and lightweight
-  - no need to import/instantiate code for the objects being mocked
+  - no need to import/instantiate constructors or objects for the mocks
   - expect many, n, at least n, at most n calls
   - allow/ignore calls
   - flexible argument matching: explicit values, by type, match function
@@ -121,7 +121,6 @@ Expect never to be called:
 
   mock.func();
   context.verifyMocks(); // false
-
 ```
 
 Ignore all calls to named function:
@@ -131,9 +130,126 @@ Ignore all calls to named function:
   context.verifyMocks(); // true
 
   mock.func();
+  context.verifyMocks(); // trues
+```
+
+## Usage - argument matching
+
+Match literal arguments:
+
+```javascript
+  mock.expects("func").passing("hello", 1);
+  mock.func("hello", 1);
+  context.verifyMocks(); // true
+
+  mock.func("goodbye", 2);
+  context.verifyMocks(); // false
+```
+
+Match any arguments:
+
+```javascript
+  mock.expects("func").passing(context.ANYARGS);
+  mock.func("hello", 1);
+  context.verifyMocks(); // true
+
+  mock.func();
+  mock.func([1,2,3]);
+  mock.func("goodbye", 2);
   context.verifyMocks(); // true
 ```
 
+Match any argument in a given position:
+
+```javascript
+  mock.expects("func").passing("hello", context.ANYTHING);
+  mock.func("hello", 1);
+  context.verifyMocks(); // true
+
+  mock.func("hello", [2,3,4]);
+  context.verifyMocks(); // true
+
+  mock.func("goodbye", [2,3,4]);
+  context.verifyMocks(); // false
+```
+
+Match an argument of a given type (type string as returned by _typeof_ operator):
+
+```javascript
+  mock.expects("func").passing(context.any('number'));
+  mock.func(1);
+  mock.func(3.1412);
+  context.verifyMocks(); // true
+
+  mock.func("whoops");
+  context.verifyMocks(); // false
+```
+
+Match an argument with a given constructor:
+
+```javascript
+  function Foo() {}
+  function Bar() {}
+
+  mock.expects("func").passing(context.any(Foo));
+
+  mock.func(new Foo());
+  context.verifyMocks(); // true
+
+  mock.func(new Bar());
+  context.verifyMocks(); // false
+```
+
+Match an argument with a function:
+
+```javascript
+  mock.expects("func").passing(function(a) {return a === 1 || a === 2});
+  mock.func(1);
+  context.verifyMocks(); // true
+
+  mock.func(3);
+  context.verifyMocks(); // false
+```
+
+## Usage - returning values, stubbing, delegating
+
+Return same value for every call:
+
+```javascript
+  mock.expects("func").returning(123);
+  var ret = mock.func(); // ret === 123
+```
+
+Return values depending on parameter expectation:
+
+```javascript
+  mock.expects("func").passing("hello").returning(123);
+  mock.expects("func").passing("goodbye").returning(456);
+  var ret1 = mock.func("hello");   // ret1 === 123
+  var ret2 = mock.func("goodbye"); // ret2 === 123
+```
+
+Return values via a stubbed function:
+
+```javascript
+  mock.expects("func").passing(context.any('number').as(function (n) {return n * 2});
+  var ret1 = mock.func(10);   // ret1 === 20
+  var ret2 = mock.func(7.5);  // ret2 === 15
+```
+
+Return values via a delegate:
+
+```javascript
+  var delegate = {
+    func1 : function(n) { return n * 2 },
+    func2 : function(s) { return s + ", indeed!" }
+  };
+
+  mock.expects("func1").passing(context.any('number').as(delegate);
+  mock.expects("func2").passing(context.any('string').as(delegate);
+  var ret1 = mock.func1(10);    // ret1 === 20
+  var ret2 = mock.func2("hey"); // ret2 === "hey indeed!"
+```
 
 
 
