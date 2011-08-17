@@ -45,28 +45,39 @@ Require mocket, create a context:
 ```
 Create a mock:
 
+```javascript
    var mock = context.createMock();
+```
 
 Set up expectations:
 
+```javascript
   mock.expects("func");
-  
+```
+
 Call the mock:
 
+```javascript
   mock.func();
-  
+```
+
 Check the expectations - boolean:
 
+```javascript
   var OK = context.verifyMocks();
-  
+```
+
 ... or assert (throws assert.AssertionError):
 
+```javascript
   context.assertMocks();
+```
 
 ## Usage - number of calls
 
 Call at least once is default:
 
+```javascript
   mock.expects("func");
   context.verifyMocks(); // false
   
@@ -75,9 +86,11 @@ Call at least once is default:
   
   mock.func();
   context.verifyMocks(); // true
+```
 
 Call a specific number of times:
 
+```javascript
   mock.expects("func").times(3);
   context.verifyMocks(); // false
   
@@ -90,20 +103,36 @@ Call a specific number of times:
 
   mock.func();
   context.verifyMocks(); // false
+```
 
 Call at least/at most n times:
 
+```javascript
   mock1.expects("func").atLeast(3);
   mock2.expects("func").atMost(7);
   mock3.expects("func").atLeast(2).atMost(4);
-  
-Assert that never called:
+```
 
+Expect never to be called:
+
+```javascript
   mock.expects("func").never();
+  context.verifyMocks(); // true
+
+  mock.func();
+  context.verifyMocks(); // false
+
+```
 
 Ignore all calls to named function:
 
+```javascript
   mock.allows("func");
+  context.verifyMocks(); // true
+
+  mock.func();
+  context.verifyMocks(); // true
+```
 
 
 
