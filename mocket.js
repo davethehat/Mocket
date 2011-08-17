@@ -1,7 +1,26 @@
+/*
+MOCKET - simple but comprehensive mock objects for JavaScript
+
+Copyright (c) 2011 David Harvey
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial
+portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 "use strict";
 
-/*
-*/
+var assert = require('assert');
 
 function Mocket() {
   return new MockContext();
@@ -91,19 +110,14 @@ MockContext.prototype = {
       unexpected: function(a) {this.unexpectedCalls.push(a.name + argumentsToString(a.args))}
     };
     if (!this.verifyMocks(collector)) {
-      throw new MockAssertionError(collector);
+      var report = [];
+      collector.failCalls.forEach(function (e) { report.push(e.toString())});
+      collector.unexpectedCalls.forEach(function (a) { report.push(a + " UNEXPECTED")});
+      assert.fail(report.join(", "), "", "", "", assert.fail);
     }
   }
 }
 
-function MockAssertionError(collector) {
-  this.prototype = Error.prototype;
-  this.name = "MockAssertionError";
-  this.collector = collector;
-  this.message = JSON.stringify(collector);
-}
-
-module.exports.MockAssertionError = MockAssertionError;
 
 function Mock(name) {
   this.name = name;
