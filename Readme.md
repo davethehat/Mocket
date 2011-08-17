@@ -35,3 +35,76 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+## Usage - basic
+
+Require mocket, create a context:
+
+   var mocket = require('mocket');
+   var context = new mocket.Mocket();
+   
+Create a mock:
+
+   var mock = context.createMock();
+
+Set up expectations:
+
+  mock.expects("func");
+  
+Call the mock:
+
+  mock.func();
+  
+Check the expectations - boolean:
+
+  var OK = context.verifyMocks();
+  
+... or assert (throws assert.AssertionError):
+
+  context.assertMocks();
+
+## Usage - number of calls
+
+Call at least once is default:
+
+  mock.expects("func");
+  context.verifyMocks(); // false
+  
+  mock.func();
+  context.verifyMocks(); // true
+  
+  mock.func();
+  context.verifyMocks(); // true
+
+Call a specific number of times:
+
+  mock.expects("func").times(3);
+  context.verifyMocks(); // false
+  
+  mock.func();
+  context.verifyMocks(); // false
+  
+  mock.func();
+  mock.func();
+  context.verifyMocks(); // true
+
+  mock.func();
+  context.verifyMocks(); // false
+
+Call at least/at most n times:
+
+  mock1.expects("func").atLeast(3);
+  mock2.expects("func").atMost(7);
+  mock3.expects("func").atLeast(2).atMost(4);
+  
+Assert that never called:
+
+  mock.expects("func").never();
+
+Ignore all calls to named function:
+
+  mock.allows("func");
+
+
+
+
+   
