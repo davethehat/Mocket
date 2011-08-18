@@ -49,16 +49,16 @@ Create a mock:
    var mock = context.createMock();
 ```
 
-Set up expectations:
+Set up expectations (note chaining of expectations):
 
 ```javascript
-  mock.expects("func");
+  mock.expects("func").passing("hello", context.ANYTHING).atLeast(2).returning("goodbye");
 ```
 
 Call the mock:
 
 ```javascript
-  mock.func();
+  mock.func("hello", 42);
 ```
 
 Check the expectations - boolean:
@@ -211,7 +211,7 @@ Match an argument with a function:
   context.verifyMocks(); // false
 ```
 
-## Usage - returning values, stubbing, delegating
+## Usage - returning values, throwing exceptions:
 
 Return same value for every call:
 
@@ -228,6 +228,34 @@ Return values depending on parameter expectation:
   var ret1 = mock.func("hello");   // ret1 === 123
   var ret2 = mock.func("goodbye"); // ret2 === 123
 ```
+
+Throw an instance of Error:
+
+```javascript
+  mock.expects("func").throwing();
+  mock.func();   // throws new Error()
+```
+
+Throw an instance of custom exception:
+
+```javascript
+  function MyException() {}
+  mock.expects("func").throwing(MyException);
+  mock.func();   // throws new MyException()
+```
+
+Throw a preconstructed instance of custom exception:
+
+```javascript
+  function MyException(message) {
+    this.message = message;
+    this.name = "MyException";
+  }
+  mock.expects("func").throwing(new MyException("from mock"));
+  mock.func();   // throws passed object as exception
+```
+
+## Usage - stubbing, delegating:
 
 Return values via a stubbed function:
 

@@ -335,3 +335,42 @@ module.exports.testInstanceMatcherArg = function() {
   m.func("hello", 3);
   verifyMocksNotOK(mocket);
 };
+
+module.exports.testThrowsError = function() {
+  var mocket = newContext();
+  var m = mocket.createMock("one");
+  m.expects("func").throwing();
+  assert.throws(
+    function() { m.func(); },
+    Error
+  );
+  verifyMocksOK(mocket);
+}
+
+module.exports.testThrowsCustomError = function() {
+  var mocket = newContext();
+  var m = mocket.createMock("one");
+  function MyEx() {
+    this.name = "MyEx";
+  }
+  m.expects("func").throwing(MyEx);
+  assert.throws(
+    function() { m.func(); },
+    MyEx
+  );
+  verifyMocksOK(mocket);
+}
+
+module.exports.testThrowsCustomErrorObject = function() {
+  var mocket = newContext();
+  var m = mocket.createMock("one");
+  function MyEx() {
+    this.name = "MyEx";
+  }
+  m.expects("func").throwing(new MyEx());
+  assert.throws(
+    function() { m.func(); },
+    MyEx
+  );
+  verifyMocksOK(mocket);
+}

@@ -184,6 +184,7 @@ Expectation.prototype = {
   atLeast   : function(n) { this.callsExpectedMin = n; return this; },
   atMost    : function(n) { this.callsExpectedMax = n; return this; },
   returning : function(value) { return this.as( function() { return value;})},
+  throwing  : function(ex) { return this.as( function() {throw typeof(ex) === 'function' ? new ex() : ex ? ex : new Error("thrown by " + this.signature())})},
   as        : function(fn) {this.impl = fn},
   call      : function() {
     // Mock ensures that the arguments match
@@ -256,8 +257,11 @@ Expectation.prototype = {
     return ret;
   },
   toString   : function() {
-    return "EXPECTATION " + this.mock.name + "." + this.name + argumentsToString(this.args)
+    return "EXPECTATION " + this.signature()
       + " [" + this.rangeAsString() + "/" + this.numcalls + "] "
       + (this.fulfilled() ? "ok" : "FAIL");
+  },
+  signature  : function() {
+    return this.mock.name + "." + this.name + argumentsToString(this.args);
   }
 }
