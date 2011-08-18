@@ -183,7 +183,10 @@ Expectation.prototype = {
   never     : function()  { return this.times(0);},
   atLeast   : function(n) { this.callsExpectedMin = n; return this; },
   atMost    : function(n) { this.callsExpectedMax = n; return this; },
-  returning : function(value) { return this.as( function() { return value;})},
+  returning : function() {
+    var returns = Array.prototype.slice.call(arguments);
+    return this.as( function() { return returns.length === 1 ? returns[0] : returns.shift(); })
+  },
   throwing  : function(ex) { return this.as( function() {throw typeof(ex) === 'function' ? new ex() : ex ? ex : new Error("thrown by " + this.signature())})},
   as        : function(fn) {this.impl = fn},
   call      : function() {

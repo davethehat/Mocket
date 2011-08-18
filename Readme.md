@@ -229,6 +229,23 @@ Return values depending on parameter expectation:
   var ret2 = mock.func("goodbye"); // ret2 === 456
 ```
 
+Return same value for every call:
+
+```javascript
+  mock.expects("func").returning(123);
+  var ret = mock.func(); // ret === 123
+```
+
+Return different values from successive calls (if more calls than values, last value given is returned):
+
+```javascript
+  mock.expects("func").returning(123, 456, 789);
+  var ret = mock.func(); // ret === 123
+  ret = mock.func(); // ret === 456
+  ret = mock.func(); // ret === 789
+  ret = mock.func(); // ret === 789
+```
+
 Throw an instance of Error:
 
 ```javascript

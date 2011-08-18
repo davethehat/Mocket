@@ -222,6 +222,21 @@ module.exports.testReturn = function() {
   verifyMocksOK(mocket);
 };
 
+module.exports.testDifferentReturns = function() {
+  var mocket = newContext();
+  var m = mocket.createMock("one");
+  m.expects("func").returning("gotcha","again");
+
+  var ret = m.func();
+  assert.equal("gotcha", ret);
+  ret = m.func();
+  assert.equal("again", ret);
+  ret = m.func();
+  assert.equal("again", ret);
+  
+  verifyMocksOK(mocket);
+};
+
 module.exports.testReturnDifferentArgs = function() {
   var mocket = newContext();
   var m = mocket.createMock("one");
