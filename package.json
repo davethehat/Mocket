@@ -2,7 +2,7 @@
   "author": "David Harvey <david@teamsandtechnology.com> (http://www.teamsandtechnology.com)",
   "name": "mocket",
   "description": "Mocking library for node.js, in the spirit of Mockito",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "https://github.com/davethehat/mocket",
   "repository": {
     "url": "git@github.com:davethehat/Mocket.gits"
