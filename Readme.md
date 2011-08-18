@@ -226,7 +226,7 @@ Return values depending on parameter expectation:
   mock.expects("func").passing("hello").returning(123);
   mock.expects("func").passing("goodbye").returning(456);
   var ret1 = mock.func("hello");   // ret1 === 123
-  var ret2 = mock.func("goodbye"); // ret2 === 123
+  var ret2 = mock.func("goodbye"); // ret2 === 456
 ```
 
 Throw an instance of Error:
