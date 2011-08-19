@@ -22,6 +22,7 @@ SOFTWARE.
 
 var assert = require("assert");
 var Mocket = require("../mocket.js");
+var equals = Mocket.equals;
 
 function newContext() {
   return Mocket.Mocket();
@@ -33,27 +34,27 @@ function verifyMocksOK(mocket) {
 }
 
 module.exports.testObjectEquals = function() {
-  assert.ok({}.equals({}));
-  assert.ok({a: 1}.equals({a: 1}));
-  assert.ok({a:1, b:2}.equals({b:2, a:1}));
-  assert.ok({f: true}.equals({f:true}));
-  assert.ok({r: /abc/}.equals({r: /abc/}));
+  assert.ok(equals({},{}));
+  assert.ok(equals({a: 1},{a: 1}));
+  assert.ok(equals({a:1, b:2}, {b:2, a:1}));
+  assert.ok(equals({f: true},{f:true}));
+  assert.ok(equals({r: /abc/},{r: /abc/}));
 
-  assert.ok(!{a:1, b:2, c:3}.equals({b:2, a:1}));
-  assert.ok(!{a:1, b:2}.equals({b:2, a:1, c:3}));
-  assert.ok(!{f: true}.equals({f:false}));
-  assert.ok(!{r: /abc/}.equals({r: /abcd/}));
+  assert.ok(!equals({a:1, b:2, c:3}, {b:2, a:1}));
+  assert.ok(!equals({a:1, b:2}, {b:2, a:1, c:3}));
+  assert.ok(!equals({f:true},{f:false}));
+  assert.ok(!equals({r: /abc/},{r: /abcd/}));
 }
 
 module.exports.testArrayEquals = function() {
-  assert.ok([].equals([]));
-  assert.ok([1,2,3].equals([1,2,3]));
-  assert.ok([1,2,[3,"IV", "five"]].equals([1,2,[3,"IV", "five"]]));
+  assert.ok(equals([],[]));
+  assert.ok(equals([1,2,3],[1,2,3]));
+  assert.ok(equals([1,2,[3,"IV", "five"]],[1,2,[3,"IV", "five"]]));
 
-  assert.ok(!([].equals("")));
-  assert.ok(![1].equals([1,2]));
-  assert.ok(![ 1, 'two', [ 'III' ] ].equals([ 1, 2, [ 'three' ] ]));
-  assert.ok(![ 1, 'two', [ 'III', [ 4 ] ] ].equals([ 1, 'two', [ 'III', ['IV'] ] ]));
+  assert.ok(!equals([],""));
+  assert.ok(!equals([1],[1,2]));
+  assert.ok(!equals([ 1, 'two', [ 'III' ] ],[ 1, 2, [ 'three' ] ]));
+  assert.ok(!equals([ 1, 'two', [ 'III', [ 4 ] ] ],[ 1, 'two', [ 'III', ['IV'] ] ]));
 };
 
 function verifyMocksNotOK(mocket) {

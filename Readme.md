@@ -43,10 +43,6 @@ Require mocket, create a context:
    var mocket = require('mocket');
    var context = new mocket.Mocket();
 ```
-NB mocket adds sensible implementations of .equals() to the prototypes of Object, Array and other global objects. This
-can cause issues with initialisation code in other libraries that introspect on objects and prototypes (e.g. mongoose).
-If you get unexpected problems in initialisation, try requiring mocket _after_ requiring the other modules your
-tests depend on.
 
 Create a mock:
 

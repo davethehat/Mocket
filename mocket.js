@@ -22,62 +22,41 @@ SOFTWARE.
 
 var assert = require('assert');
 
-Object.prototype.equals = function(obj) {
-  if (obj === this) return true;
-  for (var f in this) {
-    if (f !== 'equals' && this[f].equals && typeof this[f].equals === 'function') {
-      if (!this[f].equals(obj[f])) return false;
-    } else {
-      if (this[f] !== obj[f]) return false;
-    }
+function equals(obj1, obj2) {
+  // Doing this this way rather than adding .equals to the various prototypes improves
+  // compatibility with libraries (e.g. mongoose) that make assumptions about objects, or
+  // which in turn mess around with the prototypes.
+  if (obj1 === obj2) return true;
+
+  if (obj1 !== undefined && obj2 !== undefined && obj1.valueOf() === obj2.valueOf()) return true;
+
+  if (obj1 instanceof RegExp && obj2 instanceof RegExp) {
+    return obj1.toString() === obj2.toString();
   }
 
-  for (var g in obj) {
-    if (this[g] === undefined) return false;
+  if (obj1 instanceof Array && obj2 instanceof Array) {
+    if (obj1.length !== obj2.length) return false;
+    
+    for (var i = 0; i < obj1.length; i++) {
+      if (!equals(obj1[i], obj2[i])) return false;
+    }
+    return true;
   }
 
-  return true;
-}
-
-Array.prototype.equals = function(obj) {
-  if (!(obj instanceof Array)) return false;
-  if (obj === this) return true;
-  if (obj.length !== this.length) return false;
-
-  for (var i = 0; i < this.length; i++) {
-    if (this[i].equals && typeof this[i].equals === 'function') {
-      if (!this[i].equals(obj[i])) return false;
-    } else {
-      if (this[i] !== obj[i]) return false;
+  if (typeof obj1 === 'object' && typeof obj2 === 'object') {
+    for (var f in obj1) {
+      if (!equals(obj1[f], obj2[f])) return false;
     }
+    for (var g in obj2) {
+      if (obj1[g] === undefined) return false;
+    }
+    return true;
   }
   
-  return true;
-};
-
-String.prototype.equals = function(obj) {
-  return this === obj;
+  return false;
 }
 
-Date.prototype.equals = function(obj) {
-  return obj instanceof Date && this.valueOf() === obj.valueOf();
-}
-
-Function.prototype.equals = function(obj) {
-  return this === obj;
-}
-
-Number.prototype.equals = function(obj) {
-  return this === obj;
-}
-
-Boolean.prototype.equals = function(obj) {
-  return this === obj;
-}
-
-RegExp.prototype.equals = function(obj) {
-  return obj instanceof RegExp && this.toString() === obj.toString();
-}
+module.exports.equals = equals;
 
 Array.prototype.find = function(fn) {
   for (var i = 0; i < this.length; i++) {
@@ -262,10 +241,8 @@ Expectation.prototype = {
         if (!arg(passed)) return false;
       } else if (arg.hasOwnProperty("matches") && typeof arg.matches === 'function') {
         if (!arg.matches(passed)) return false;
-      } else if (arg.equals && typeof (arg.equals === 'function')) {
-        if (!arg.equals(passed)) return false;
       } else {
-        if (arg !== passed) return false;
+        if (!equals(arg, passed)) return false;
       }
     };
     return true;
