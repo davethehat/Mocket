@@ -244,13 +244,6 @@ Return values depending on parameter expectation:
   var ret2 = mock.func("goodbye"); // ret2 === 456
 ```
 
-Return same value for every call:
-
-```javascript
-  mock.expects("func").returning(123);
-  var ret = mock.func(); // ret === 123
-```
-
 Return different values from successive calls (if more calls than values, last value given is returned):
 
 ```javascript
@@ -292,7 +285,7 @@ Throw a preconstructed instance of custom exception:
 Return values via a stubbed function:
 
 ```javascript
-  mock.expects("func").passing(context.any('number').as(function (n) {return n * 2});
+  mock.expects("func").passing(context.any('number')).as(function (n) {return n * 2});
   var ret1 = mock.func(10);   // ret1 === 20
   var ret2 = mock.func(7.5);  // ret2 === 15
 ```
@@ -305,8 +298,8 @@ Return values via a delegate:
     func2 : function(s) { return s + ", indeed!" }
   };
 
-  mock.expects("func1").passing(context.any('number').as(delegate);
-  mock.expects("func2").passing(context.any('string').as(delegate);
+  mock.expects("func1").passing(context.any('number')).as(delegate);
+  mock.expects("func2").passing(context.any('string')).as(delegate);
   var ret1 = mock.func1(10);    // ret1 === 20
   var ret2 = mock.func2("hey"); // ret2 === "hey indeed!"
 ```
