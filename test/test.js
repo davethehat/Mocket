@@ -32,11 +32,25 @@ function verifyMocksOK(mocket) {
   assert.doesNotThrow(function() {mocket.assertMocks()}, assert.AssertionError);
 }
 
+module.exports.testObjectEquals = function() {
+  assert.ok({}.equals({}));
+  assert.ok({a: 1}.equals({a: 1}));
+  assert.ok({a:1, b:2}.equals({b:2, a:1}));
+  assert.ok({f: true}.equals({f:true}));
+  assert.ok({r: /abc/}.equals({r: /abc/}));
+
+  assert.ok(!{a:1, b:2, c:3}.equals({b:2, a:1}));
+  assert.ok(!{a:1, b:2}.equals({b:2, a:1, c:3}));
+  assert.ok(!{f: true}.equals({f:false}));
+  assert.ok(!{r: /abc/}.equals({r: /abcd/}));
+}
+
 module.exports.testArrayEquals = function() {
   assert.ok([].equals([]));
   assert.ok([1,2,3].equals([1,2,3]));
   assert.ok([1,2,[3,"IV", "five"]].equals([1,2,[3,"IV", "five"]]));
-  assert.ok(![].equals(""));
+
+  assert.ok(!([].equals("")));
   assert.ok(![1].equals([1,2]));
   assert.ok(![ 1, 'two', [ 'III' ] ].equals([ 1, 2, [ 'three' ] ]));
   assert.ok(![ 1, 'two', [ 'III', [ 4 ] ] ].equals([ 1, 'two', [ 'III', ['IV'] ] ]));
@@ -186,6 +200,17 @@ module.exports.testWithArrayArgs = function() {
   m.func();
   verifyMocksNotOK(mocket);
 };
+
+module.exports.testWithObjectArgs = function() {
+  var mocket = newContext();
+  var m = mocket.createMock("one");
+  var d1 = new Date();
+  var d2 = new Date(d1);
+  m.expects("func").passing({a: 1, b: "two", c: [1,2,3], d: d1});
+
+  m.func({a: 1, b: "two", c: [1,2,3], d: d2});
+  verifyMocksOK(mocket);
+}
 
 module.exports.testFailsWithArrayArgs = function() {
   var mocket = newContext();

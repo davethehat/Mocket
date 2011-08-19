@@ -43,6 +43,11 @@ Require mocket, create a context:
    var mocket = require('mocket');
    var context = new mocket.Mocket();
 ```
+NB mocket adds sensible implementations of .equals() to the prototypes of Object, Array and other global objects. This
+can cause issues with initialisation code in other libraries that introspect on objects and prototypes (e.g. mongoose).
+If you get unexpected problems in initialisation, try requiring mocket _after_ requiring the other modules your
+tests depend on.
+
 Create a mock:
 
 ```javascript
@@ -65,6 +70,7 @@ Check the expectations - boolean:
 
 ```javascript
   var OK = context.verifyMocks();
+  OK = context.verifyMocks(true); // logs to stdout
 ```
 
 ... or assert (throws assert.AssertionError):
@@ -72,6 +78,19 @@ Check the expectations - boolean:
 ```javascript
   context.assertMocks();
 ```
+
+Collect verification status:
+
+```javascript
+  // Collector object
+  var collector = {
+    ok         : function (expectation) {console.log(expectation.toString())},
+    fail       : function (expectation) {console.error(expectation.toString())},
+    unexpected : function (methodWithArgs) {console.error(methodWithArgs.name + argumentsToString(methodWithArgs.args) + " UNEXPECTED")}
+  };
+  OK = context.verifyMocks(collector); // collect mock status for logging/reporting
+```
+
 
 ## Usage - number of calls
 

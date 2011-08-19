@@ -22,8 +22,21 @@ SOFTWARE.
 
 var assert = require('assert');
 
-function Mocket() {
-  return new MockContext();
+Object.prototype.equals = function(obj) {
+  if (obj === this) return true;
+  for (var f in this) {
+    if (f !== 'equals' && this[f].equals && typeof this[f].equals === 'function') {
+      if (!this[f].equals(obj[f])) return false;
+    } else {
+      if (this[f] !== obj[f]) return false;
+    }
+  }
+
+  for (var g in obj) {
+    if (this[g] === undefined) return false;
+  }
+
+  return true;
 }
 
 Array.prototype.equals = function(obj) {
@@ -42,6 +55,30 @@ Array.prototype.equals = function(obj) {
   return true;
 };
 
+String.prototype.equals = function(obj) {
+  return this === obj;
+}
+
+Date.prototype.equals = function(obj) {
+  return obj instanceof Date && this.valueOf() === obj.valueOf();
+}
+
+Function.prototype.equals = function(obj) {
+  return this === obj;
+}
+
+Number.prototype.equals = function(obj) {
+  return this === obj;
+}
+
+Boolean.prototype.equals = function(obj) {
+  return this === obj;
+}
+
+RegExp.prototype.equals = function(obj) {
+  return obj instanceof RegExp && this.toString() === obj.toString();
+}
+
 Array.prototype.find = function(fn) {
   for (var i = 0; i < this.length; i++) {
     if (fn(this[i])) return this[i];
@@ -49,20 +86,30 @@ Array.prototype.find = function(fn) {
   return undefined;
 }
 
+function Mocket() {
+  return new MockContext();
+}
+
 Mocket.MANY = -1;
 Mocket.ANYTHING = {
-  matches  : function() {return true},
-  toString : function() {return "ANYTHING"}
+  matches  : function() { return true },
+  toString : function() { return "ANYTHING" }
 };
 Mocket.ANYARGS  = {
-  toString : function() {return "ANYARGS"}
+  toString : function() { return "ANYARGS" }
 };
 
 module.exports.Mocket = Mocket;
 
 function argumentsToString(args) {
-  args = Array.prototype.slice.call(args);
-  return "(" + args.join(",") + ")";
+  args = Array.prototype.slice.call(arguments);
+  var ret = "(";
+  args.forEach(function(a, index) {
+    if (index > 0) ret += ",";
+    ret += JSON.stringify(a);
+  });
+  ret += ")";
+  return ret;
 }
 
 function MockContext() {
@@ -174,21 +221,27 @@ function Expectation(mock, name) {
 }
 
 Expectation.prototype = {
-  passing   : function() {
-    this.args = arguments;
-    return this;
-  },
+  passing   : function()  { this.args = arguments; return this; },
   times     : function(n) { this.callsExpectedMin = this.callsExpectedMax = n; return this; },
   once      : function()  { return this.times(1);},
   never     : function()  { return this.times(0);},
   atLeast   : function(n) { this.callsExpectedMin = n; return this; },
   atMost    : function(n) { this.callsExpectedMax = n; return this; },
-  returning : function() {
+  returning : function()  {
     var returns = Array.prototype.slice.call(arguments);
-    return this.as( function() { return returns.length === 1 ? returns[0] : returns.shift(); })
+    return this.as( function() {
+      return returns.length === 1 ? returns[0] : returns.shift();
+    });
   },
-  throwing  : function(ex) { return this.as( function() {throw typeof(ex) === 'function' ? new ex() : ex ? ex : new Error("thrown by " + this.signature())})},
-  as        : function(fn) {this.impl = fn},
+  throwing  : function(ex) {
+    return this.as( function() {
+      throw typeof(ex) === 'function' ? new ex()
+        : ex ? ex
+        : new Error("thrown by " + this.signature());
+    });
+  },
+  as        : function(fn) { this.impl = fn; return this},
+  
   call      : function() {
     // Mock ensures that the arguments match
     this.numcalls++;
@@ -207,7 +260,7 @@ Expectation.prototype = {
       var passed = args[i];
       if (typeof arg === 'function') {
         if (!arg(passed)) return false;
-      } else if (arg.hasOwnProperty("matches")) {
+      } else if (arg.hasOwnProperty("matches") && typeof arg.matches === 'function') {
         if (!arg.matches(passed)) return false;
       } else if (arg.equals && typeof (arg.equals === 'function')) {
         if (!arg.equals(passed)) return false;
