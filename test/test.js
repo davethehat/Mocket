@@ -415,3 +415,11 @@ module.exports.testThrowsCustomErrorObject = function() {
   );
   verifyMocksOK(mocket);
 }
+
+module.exports.testObjectMatcher = function() {
+  var mocket = newContext();
+  var m = mocket.createMock("one");
+  m.expects("foo").passing({one : 1, two : "II", $three : [1,2,3], four : {a : "AAA"}});
+  m.foo({one : 1, two : "II", $three : [1,2,3], four : {a : "AAA"}});
+  verifyMocksOK(mocket);
+}
