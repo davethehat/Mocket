@@ -44,6 +44,14 @@ module.exports.testObjectEquals = function() {
   assert.ok(!equals({a:1, b:2}, {b:2, a:1, c:3}));
   assert.ok(!equals({f:true},{f:false}));
   assert.ok(!equals({r: /abc/},{r: /abcd/}));
+
+  var obj1 = {one : 1, two : "II", $three : [1,2,3], four : {a : "AAA"}};
+  obj1.foo = function() { console.log("Nope"); };
+  var obj2 = {one : 1, two : "II", $three : [1,2,3], four : {a : "AAA"}};
+  assert.ok(equals(obj1, obj2));
+  assert.ok(equals(obj2, obj1));
+
+  
 }
 
 module.exports.testArrayEquals = function() {
@@ -423,3 +431,4 @@ module.exports.testObjectMatcher = function() {
   m.foo({one : 1, two : "II", $three : [1,2,3], four : {a : "AAA"}});
   verifyMocksOK(mocket);
 }
+
