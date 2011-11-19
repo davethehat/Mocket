@@ -45,12 +45,12 @@ function equals(obj1, obj2) {
 
   if (typeof obj1 === 'object' && typeof obj2 === 'object') {
     for (var f in obj1) {
-      if (obj1[f] instanceof RegExp || typeof obj1[f] !== 'function') {
+      if (obj1.hasOwnProperty(f) && obj1[f] instanceof RegExp || typeof obj1[f] !== 'function') {
         if (!equals(obj1[f], obj2[f])) return false;
       }
     }
     for (var g in obj2) {
-      if (obj2[g] instanceof RegExp || typeof obj2[g] !== 'function') {
+      if (obj2.hasOwnProperty(g) && obj2[g] instanceof RegExp || typeof obj2[g] !== 'function') {
         if (obj1[g] === undefined) return false;
       }
     }
