@@ -416,6 +416,7 @@ module.exports.testThrowsCustomErrorObject = function() {
   verifyMocksOK(mocket);
 }
 
+// {location : {$within : {$center : [[10.0, 25.0], 0.1]}}}
 module.exports.testObjectMatcher = function() {
   var mocket = newContext();
   var m = mocket.createMock("one");

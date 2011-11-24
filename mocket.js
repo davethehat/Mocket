@@ -157,9 +157,10 @@ Mock.prototype = {
     this.calls[methodName] = this.calls[methodName] || [];
     this.calls[methodName].push(e);
 
+    var self = this;
     this[methodName] = function foo() {
       var args = arguments;
-      var ex = this.calls[methodName].find(function(x) {return x.matches(args);});
+      var ex = self.calls[methodName].find(function(x) {return x.matches(args);});
       if (ex) {
         return ex.call.apply(ex, arguments);
       } else {
