@@ -126,7 +126,9 @@ MockContext.prototype = {
     }
     var fails = false;
     this.mocks.forEach(function(mock) {
-      fails = fails || !mock.verify(collector);
+      if (!mock.verify(collector)) {
+        fails = true;
+      }
     })
     return !fails;
   },
@@ -137,13 +139,14 @@ MockContext.prototype = {
       unexpectedCalls : [],
       ok: function(e) {this.okCalls.push(e.toString())},
       fail: function(e) {this.failCalls.push(e.toString())},
-      unexpected: function(a) {this.unexpectedCalls.push(a.name + argumentsToString(a.args))}
+      unexpected: function(mock, a) {this.unexpectedCalls.push(mock.name + "." + a.name + argumentsToString(a.args))}
     };
     if (!this.verifyMocks(collector)) {
-      var report = [];
+      var report = [""];
+      collector.okCalls.forEach(function (e) { report.push(e.toString())});
       collector.failCalls.forEach(function (e) { report.push(e.toString())});
-      collector.unexpectedCalls.forEach(function (a) { report.push(a + " UNEXPECTED")});
-      assert.fail(report.join(", "), "", "", "", assert.fail);
+      collector.unexpectedCalls.forEach(function (a) { report.push("FAIL UNEXPECTED  " + a.toString())});
+      assert.fail("", "", report.join("\n"), "", assert.fail);
     }
   }
 }
@@ -162,7 +165,7 @@ Mock.prototype = {
     this.calls[methodName].push(e);
 
     var self = this;
-    this[methodName] = function foo() {
+    this[methodName] = function mockedMethod() {
       var args = arguments;
       var ex = self.calls[methodName].find(function(x) {return x.matches(args);});
       if (ex) {
@@ -178,6 +181,7 @@ Mock.prototype = {
     this[methodName] = function() {}
   },
   verify : function(collector) {
+    var self = this;
     var res = [];
     for (var f in this.calls) {
       if (this.calls.hasOwnProperty(f)) {
@@ -188,7 +192,7 @@ Mock.prototype = {
     var unexpectedOK = true;
     this.unexpected.forEach(function(call) {
       unexpectedOK = false;
-      !collector || collector.unexpected(call);
+      !collector || collector.unexpected(self, call);
     });
     return callsOK && unexpectedOK;
   }
@@ -243,7 +247,9 @@ Expectation.prototype = {
       var arg = this.args[i];
       var passed = args[i];
       if (typeof arg === 'function') {
-        if (!arg(passed)) return false;
+        if (!arg(passed)) {
+          return false;
+        }
       } else if (arg.hasOwnProperty("matches") && typeof arg.matches === 'function') {
         if (!arg.matches(passed)) return false;
       } else {
@@ -295,9 +301,9 @@ Expectation.prototype = {
     return ret;
   },
   toString   : function() {
-    return "EXPECTATION " + this.signature()
-      + " [" + this.rangeAsString() + "/" + this.numcalls + "] "
-      + (this.fulfilled() ? "ok" : "FAIL");
+    var status = this.fulfilled() ? "OK  " : "FAIL"
+    return status + " EXPECTATION " + this.signature()
+      + " [" + this.rangeAsString() + "/" + this.numcalls + "]"
   },
   signature  : function() {
     return this.mock.name + "." + this.name + argumentsToString(this.args);

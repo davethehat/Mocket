@@ -82,7 +82,7 @@ Collect verification status:
   var collector = {
     ok         : function (expectation) {console.log(expectation.toString())},
     fail       : function (expectation) {console.error(expectation.toString())},
-    unexpected : function (methodWithArgs) {console.error(methodWithArgs.name + argumentsToString(methodWithArgs.args) + " UNEXPECTED")}
+    unexpected : function (mock, methodWithArgs) {console.error(mock.name + "." + methodWithArgs.name + argumentsToString(methodWithArgs.args) + " UNEXPECTED")}
   };
   OK = context.verifyMocks(collector); // collect mock status for logging/reporting
 ```
