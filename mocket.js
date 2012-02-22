@@ -22,6 +22,7 @@ SOFTWARE.
 
 var assert = require('assert');
 
+//noinspection JSUnfilteredForInLoop
 function equals(obj1, obj2) {
   // Doing this this way rather than adding .equals to the various prototypes improves
   // compatibility with libraries (e.g. mongoose) that make assumptions about objects, or
@@ -67,7 +68,7 @@ Array.prototype.find = function(fn) {
     if (fn(this[i])) return this[i];
   }
   return undefined;
-}
+};
 
 function Mocket() {
   return new MockContext();
@@ -118,6 +119,7 @@ MockContext.prototype = {
   },
   verifyMocks : function(collector) {
     if (collector === true) {
+      //noinspection JSUnusedAssignment
       collector = {
         ok         : function (e) {console.log(e.toString())},
         fail       : function (e) {console.log(e.toString())},
@@ -125,11 +127,12 @@ MockContext.prototype = {
       };
     }
     var fails = false;
-    this.mocks.forEach(function(mock) {
+    this.mocks.forEach(function(mock) //noinspection JSUnusedAssignment
+    {
       if (!mock.verify(collector)) {
         fails = true;
       }
-    })
+    });
     return !fails;
   },
   assertMocks : function() {
@@ -149,7 +152,7 @@ MockContext.prototype = {
       assert.fail("", "", report.join("\n"), "", assert.fail);
     }
   }
-}
+};
 
 
 function Mock(name) {
@@ -158,6 +161,7 @@ function Mock(name) {
   this.unexpected = [];
 }
 
+//noinspection JSUnusedGlobalSymbols
 Mock.prototype = {
   expects : function (methodName) {
     var e = new Expectation(this, methodName);
@@ -195,6 +199,9 @@ Mock.prototype = {
       !collector || collector.unexpected(self, call);
     });
     return callsOK && unexpectedOK;
+  },
+  toJSON : function() {
+    return "{[mock: " + this.name +"]}";
   }
 };
 
@@ -202,7 +209,7 @@ function Expectation(mock, name) {
   this.mock = mock;
   this.name = name;
   this.args = [];
-  this.impl = function() {}
+  this.impl = function() {};
   this.numcalls = 0;
   this.callsExpectedMin = Mocket.MANY;
   this.callsExpectedMax = Mocket.MANY;
@@ -255,7 +262,7 @@ Expectation.prototype = {
       } else {
         if (!equals(arg, passed)) return false;
       }
-    };
+    }
     return true;
   },
   verify    : function(collector) {
@@ -301,11 +308,11 @@ Expectation.prototype = {
     return ret;
   },
   toString   : function() {
-    var status = this.fulfilled() ? "OK  " : "FAIL"
+    var status = this.fulfilled() ? "OK  " : "FAIL";
     return status + " EXPECTATION " + this.signature()
       + " [" + this.rangeAsString() + "/" + this.numcalls + "]"
   },
   signature  : function() {
     return this.mock.name + "." + this.name + argumentsToString(this.args);
   }
-}
+};
