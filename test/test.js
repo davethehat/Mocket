@@ -50,9 +50,7 @@ module.exports.testObjectEquals = function() {
   var obj2 = {one : 1, two : "II", $three : [1,2,3], four : {a : "AAA"}};
   assert.ok(equals(obj1, obj2));
   assert.ok(equals(obj2, obj1));
-
-  
-}
+};
 
 module.exports.testArrayEquals = function() {
   assert.ok(equals([],[]));
@@ -67,6 +65,7 @@ module.exports.testArrayEquals = function() {
 
 function verifyMocksNotOK(mocket) {
   assert.ok(!mocket.verifyMocks());
+  //noinspection ReservedWordAsName
   assert.throws(function() {mocket.assertMocks()}, Mocket.MockAssertionError);
 }
 
@@ -186,6 +185,24 @@ module.exports.testAllowsNotCalled = function() {
   verifyMocksOK(mocket);
 };
 
+module.exports.testWithMissingArgs = function() {
+  var mocket = newContext();
+  var m = mocket.createMock("one");
+  m.expects("call");
+  m.call();
+  m.call('with some',[],'arguments');
+  verifyMocksOK(mocket);
+};
+
+module.exports.testWithNoArgs = function() {
+  var mocket = newContext();
+  var m = mocket.createMock("one");
+  m.expects("call").passing();
+  m.call('with some',[],'arguments');
+  verifyMocksNotOK(mocket);
+};
+
+
 module.exports.testWithArgs = function() {
   var mocket = newContext();
   var m = mocket.createMock("one");
@@ -219,7 +236,7 @@ module.exports.testWithObjectArgs = function() {
 
   m.func({a: 1, b: "two", c: [1,2,3], d: d2});
   verifyMocksOK(mocket);
-}
+};
 
 module.exports.testFailsWithArrayArgs = function() {
   var mocket = newContext();
@@ -357,8 +374,8 @@ module.exports.testInstanceOfNumberArg = function() {
 };
 
 module.exports.testInstanceOfCustomObjectArg = function() {
-  function Foo() {};
-  function Bar() {};
+  function Foo() {}
+  function Bar() {}
   var mocket = newContext();
   var m = mocket.createMock("one");
   m.expects("func").passing("hello", mocket.any(Foo));
@@ -371,8 +388,6 @@ module.exports.testInstanceOfCustomObjectArg = function() {
 };
 
 module.exports.testInstanceMatcherArg = function() {
-  function Foo() {};
-  function Bar() {};
   var mocket = newContext();
   var m = mocket.createMock("one");
   m.expects("func").passing("hello", function(a) {return a === 1 || a === 2});
@@ -389,12 +404,13 @@ module.exports.testThrowsError = function() {
   var mocket = newContext();
   var m = mocket.createMock("one");
   m.expects("func").throwing();
+  //noinspection ReservedWordAsName
   assert.throws(
     function() { m.func(); },
     Error
   );
   verifyMocksOK(mocket);
-}
+};
 
 module.exports.testThrowsCustomError = function() {
   var mocket = newContext();
@@ -403,12 +419,13 @@ module.exports.testThrowsCustomError = function() {
     this.name = "MyEx";
   }
   m.expects("func").throwing(MyEx);
+  //noinspection ReservedWordAsName
   assert.throws(
     function() { m.func(); },
     MyEx
   );
   verifyMocksOK(mocket);
-}
+};
 
 module.exports.testThrowsCustomErrorObject = function() {
   var mocket = newContext();
@@ -422,14 +439,13 @@ module.exports.testThrowsCustomErrorObject = function() {
     MyEx
   );
   verifyMocksOK(mocket);
-}
+};
 
-// {location : {$within : {$center : [[10.0, 25.0], 0.1]}}}
 module.exports.testObjectMatcher = function() {
   var mocket = newContext();
   var m = mocket.createMock("one");
   m.expects("foo").passing({one : 1, two : "II", $three : [1,2,3], four : {a : "AAA"}});
   m.foo({one : 1, two : "II", $three : [1,2,3], four : {a : "AAA"}});
   verifyMocksOK(mocket);
-}
+};
 

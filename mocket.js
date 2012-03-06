@@ -208,7 +208,7 @@ Mock.prototype = {
 function Expectation(mock, name) {
   this.mock = mock;
   this.name = name;
-  this.args = [];
+  this.args = [Mocket.ANYARGS];
   this.impl = function() {};
   this.numcalls = 0;
   this.callsExpectedMin = Mocket.MANY;
