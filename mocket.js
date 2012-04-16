@@ -63,13 +63,6 @@ function equals(obj1, obj2) {
 
 module.exports.equals = equals;
 
-Array.prototype.find = function(fn) {
-  for (var i = 0; i < this.length; i++) {
-    if (fn(this[i])) return this[i];
-  }
-  return undefined;
-};
-
 function Mocket() {
   return new MockContext();
 }
@@ -171,7 +164,7 @@ Mock.prototype = {
     var self = this;
     this[methodName] = function mockedMethod() {
       var args = arguments;
-      var ex = self.calls[methodName].find(function(x) {return x.matches(args);});
+      var ex = self.calls[methodName].filter(function(x) {return x.matches(args);})[0];
       if (ex) {
         return ex.call.apply(ex, arguments);
       } else {
