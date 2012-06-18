@@ -45,20 +45,27 @@ function equals(obj1, obj2) {
   }
 
   if (typeof obj1 === 'object' && typeof obj2 === 'object') {
-    for (var f in obj1) {
-      if (obj1.hasOwnProperty(f) && obj1[f] instanceof RegExp || typeof obj1[f] !== 'function') {
-        if (!equals(obj1[f], obj2[f])) return false;
-      }
-    }
-    for (var g in obj2) {
-      if (obj2.hasOwnProperty(g) && obj2[g] instanceof RegExp || typeof obj2[g] !== 'function') {
-        if (obj1[g] === undefined) return false;
-      }
-    }
-    return true;
+    var keyset1 = nonFunctionKeysForObject(obj1).sort();
+    var keyset2 = nonFunctionKeysForObject(obj2).sort();
+
+    if (!equals(keyset1, keyset2)) return false;
+
+    var len = keyset1.filter(function(f) { return !equals(obj1[f], obj2[f]); }).length;
+
+    return len == 0;
   }
   
   return false;
+}
+
+function nonFunctionKeysForObject(obj) {
+  var ret = [];
+  for (var f in obj) {
+    if (obj.hasOwnProperty(f) && typeof obj[f] !== 'function') {
+      ret.push(f);
+    }
+  }
+  return ret;
 }
 
 module.exports.equals = equals;

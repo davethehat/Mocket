@@ -50,6 +50,9 @@ module.exports.testObjectEquals = function() {
   var obj2 = {one : 1, two : "II", $three : [1,2,3], four : {a : "AAA"}};
   assert.ok(equals(obj1, obj2));
   assert.ok(equals(obj2, obj1));
+  assert.ok(equals({foo:undefined}, {foo:undefined}));
+  assert.ok(!equals({}, {foo:undefined}));
+  assert.ok(!equals({foo:undefined}, {}));
 };
 
 module.exports.testArrayEquals = function() {
