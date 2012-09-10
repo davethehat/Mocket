@@ -20,8 +20,6 @@ SOFTWARE.
 
 "use strict";
 
-var assert = require('assert');
-
 //noinspection JSUnfilteredForInLoop
 function equals(obj1, obj2) {
   // Doing this this way rather than adding .equals to the various prototypes improves
@@ -85,12 +83,47 @@ Mocket.ANYARGS  = {
 
 module.exports.Mocket = Mocket;
 
+function toSource(o) {
+  var ret = '';
+  if (o instanceof Array) {
+    ret += '[';
+    o.forEach(function (item, index) {
+      if (index > 0) ret += ',';
+      ret += toSource(item);
+    });
+    ret += ']'
+  } else if (o instanceof Function) {
+    ret += '(function)';
+  } else if (o instanceof Date || o instanceof RegExp ||  o instanceof String || typeof(o) == 'string') {
+    ret += '"' + o.toString().replace('"', '\"').replace("'", "\'") + '"';
+  } else if (typeof(o) == 'object') {
+    ret += '{';
+    var count = 0;
+    for (var f in o) {
+      if (o.hasOwnProperty(f)) {
+        if (count++) ret += ',';
+        ret += f;
+        ret += ':';
+        ret += toSource(o[f]);
+      }
+    }
+    ret += '}';
+  } else if (o === null) {
+    ret += 'null';
+  } else if (o === undefined) {
+    ret += 'undefined';
+  } else {
+    ret += o.toString();
+  }
+  return ret;
+}
+
 function argumentsToString(args) {
   args = Array.prototype.slice.call(arguments);
   var ret = "(";
   args.forEach(function(a, index) {
     if (index > 0) ret += ",";
-    ret += JSON.stringify(a);
+    ret += toSource(a); //JSON.stringify(a);
   });
   ret += ")";
   return ret;
@@ -100,6 +133,7 @@ function MockContext() {
   this.mocks = [];
 }
 
+//noinspection JSUnusedGlobalSymbols
 MockContext.prototype = {
   ANYTHING : Mocket.ANYTHING,
   ANYARGS  : Mocket.ANYARGS,
@@ -215,6 +249,7 @@ function Expectation(mock, name) {
   this.callsExpectedMax = Mocket.MANY;
 }
 
+//noinspection JSUnusedGlobalSymbols
 Expectation.prototype = {
   passing   : function()  { this.args = arguments; return this; },
   times     : function(n) { this.callsExpectedMin = this.callsExpectedMax = n; return this; },
