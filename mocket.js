@@ -20,6 +20,8 @@ SOFTWARE.
 
 "use strict";
 
+var assert = require('assert');
+
 //noinspection JSUnfilteredForInLoop
 function equals(obj1, obj2) {
   // Doing this this way rather than adding .equals to the various prototypes improves
