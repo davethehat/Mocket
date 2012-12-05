@@ -22,40 +22,61 @@ SOFTWARE.
 
 var assert = require('assert');
 
+var comparePassed = { ok : function() { return true; }, not : function() { return false; } };
+var compareFailed = function (obj1, obj2) {
+  return {
+    message : function() { return JSON.stringify(obj1) + " is not the same as " + JSON.stringify(obj2); },
+    ok : function() { return false; },
+    not : function() { return true; }
+  }
+};
+
+
 //noinspection JSUnfilteredForInLoop
 function equals(obj1, obj2) {
   // Doing this this way rather than adding .equals to the various prototypes improves
   // compatibility with libraries (e.g. mongoose) that make assumptions about objects, or
   // which in turn mess around with the prototypes.
-  if (obj1 === obj2) return true;
+  if (obj1 === obj2) return comparePassed;
 
-  if (obj1 !== undefined && obj2 !== undefined && obj1.valueOf() === obj2.valueOf()) return true;
+  if (obj1 !== undefined && obj2 !== undefined && obj1.valueOf() === obj2.valueOf()) return comparePassed;
 
   if (obj1 instanceof RegExp && obj2 instanceof RegExp) {
-    return obj1.toString() === obj2.toString();
+    if (obj1.toString() === obj2.toString()) {
+      return comparePassed;
+    } else {
+      return compareFailed(obj1, obj2);
+    }
   }
 
   if (obj1 instanceof Array && obj2 instanceof Array) {
-    if (obj1.length !== obj2.length) return false;
+    if (obj1.length !== obj2.length) return compareFailed(obj1, obj2);
     
     for (var i = 0; i < obj1.length; i++) {
-      if (!equals(obj1[i], obj2[i])) return false;
+      var res = equals(obj1[i], obj2[i]);
+      if (res.not()) return res;
     }
-    return true;
+    return comparePassed;
   }
 
   if (typeof obj1 === 'object' && typeof obj2 === 'object') {
     var keyset1 = nonFunctionKeysForObject(obj1).sort();
     var keyset2 = nonFunctionKeysForObject(obj2).sort();
 
-    if (!equals(keyset1, keyset2)) return false;
+    if (equals(keyset1, keyset2).not()) return compareFailed(keyset1, keyset2);
 
-    var len = keyset1.filter(function(f) { return !equals(obj1[f], obj2[f]); }).length;
+    for (var i=0; i<keyset1.length; i++) {
+      var res = equals(obj1[keyset1[i]], obj2[keyset1[i]]);
+      if (res.not()) return res;
+    }
+    var len = keyset1.filter(function(f) {
+      var res = equals(obj1[f], obj2[f]);
+      return res.not();
+    }).length;
 
-    return len == 0;
+    return len == 0 ? comparePassed : compareFailed(obj1, obj2);
   }
-  
-  return false;
+  return compareFailed(obj1, obj2);
 }
 
 function nonFunctionKeysForObject(obj) {
@@ -297,7 +318,11 @@ Expectation.prototype = {
       } else if (arg.hasOwnProperty("matches") && typeof arg.matches === 'function') {
         if (!arg.matches(passed)) return false;
       } else {
-        if (!equals(arg, passed)) return false;
+        var res = equals(arg, passed);
+        if (res.not()) {
+          console.log(res.message());
+          return false;
+        }
       }
     }
     return true;
@@ -353,3 +378,4 @@ Expectation.prototype = {
     return this.mock.name + "." + this.name + argumentsToString(this.args);
   }
 };
+
