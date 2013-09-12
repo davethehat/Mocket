@@ -65,9 +65,9 @@ function equals(obj1, obj2) {
 
     if (equals(keyset1, keyset2).not()) return compareFailed(keyset1, keyset2);
 
-    for (var i=0; i<keyset1.length; i++) {
-      var res = equals(obj1[keyset1[i]], obj2[keyset1[i]]);
-      if (res.not()) return res;
+    for (var i2=0; i2<keyset1.length; i2++) {
+      var res2 = equals(obj1[keyset1[i2]], obj2[keyset1[i2]]);
+      if (res2.not()) return res2;
     }
     var len = keyset1.filter(function(f) {
       var res = equals(obj1[f], obj2[f]);
@@ -122,12 +122,16 @@ function toSource(o) {
   } else if (typeof(o) == 'object') {
     ret += '{';
     var count = 0;
-    for (var f in o) {
-      if (o.hasOwnProperty(f)) {
-        if (count++) ret += ',';
-        ret += f;
-        ret += ':';
-        ret += toSource(o[f]);
+    if (o && o.mock) {
+      ret += "mock:"+ o.mock; // beware of recursing with mocks: they go round and round and round...
+    } else {
+      for (var f in o) {
+        if (o.hasOwnProperty(f)) {
+          if (count++) ret += ',';
+          ret += f;
+          ret += ':';
+          ret += toSource(o[f]);
+        }
       }
     }
     ret += '}';
@@ -142,7 +146,7 @@ function toSource(o) {
 }
 
 function argumentsToString(args) {
-  args = Array.prototype.slice.call(arguments);
+  args = Array.prototype.slice.call(args); // Changed from args = Array.prototype.slice.call(arguments), which doesn't seem correct.
   var ret = "(";
   args.forEach(function(a, index) {
     if (index > 0) ret += ",";
@@ -233,6 +237,7 @@ Mock.prototype = {
         return ex.call.apply(ex, arguments);
       } else {
         this.unexpected.push({name : methodName, args: arguments});
+        return undefined;
       }
     };
     
