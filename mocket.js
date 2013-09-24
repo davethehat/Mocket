@@ -89,7 +89,6 @@ function nonFunctionKeysForObject(obj) {
   return ret;
 }
 
-module.exports.equals = equals;
 
 function Mocket() {
   return new MockContext();
@@ -103,8 +102,6 @@ Mocket.ANYTHING = {
 Mocket.ANYARGS  = {
   toString : function() { return "ANYARGS" }
 };
-
-module.exports.Mocket = Mocket;
 
 function toSource(o) {
   var ret = '';
@@ -325,7 +322,7 @@ Expectation.prototype = {
       } else {
         var res = equals(arg, passed);
         if (res.not()) {
-          console.log(res.message());
+          console.log(res.message() + ' (in ' + this.mock.name + '.' + this.name + ')');
           return false;
         }
       }
@@ -384,3 +381,5 @@ Expectation.prototype = {
   }
 };
 
+module.exports.equals = equals;
+module.exports.Mocket = Mocket;
