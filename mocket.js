@@ -233,6 +233,12 @@ Mock.prototype = {
       if (ex) {
         return ex.call.apply(ex, arguments);
       } else {
+        self.calls[methodName].forEach(function(x) {
+          var res = x.failedMatch;
+          if (res) {
+            console.log(res.message() + ' (in ' + self.name + '.' + methodName + ')');
+          }
+        });
         this.unexpected.push({name : methodName, args: arguments});
         return undefined;
       }
@@ -272,6 +278,7 @@ function Expectation(mock, name) {
   this.numcalls = 0;
   this.callsExpectedMin = Mocket.MANY;
   this.callsExpectedMax = Mocket.MANY;
+  this.failedMatch = null;
 }
 
 //noinspection JSUnusedGlobalSymbols
@@ -322,7 +329,8 @@ Expectation.prototype = {
       } else {
         var res = equals(arg, passed);
         if (res.not()) {
-          console.log(res.message() + ' (in ' + this.mock.name + '.' + this.name + ')');
+          //console.log(res.message() + ' (in ' + this.mock.name + '.' + this.name + ')');
+          this.failedMatch = res;
           return false;
         }
       }

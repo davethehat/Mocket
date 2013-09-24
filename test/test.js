@@ -34,36 +34,36 @@ function verifyMocksOK(mocket) {
 }
 
 module.exports.testObjectEquals = function() {
-  assert.ok(equals({},{}));
-  assert.ok(equals({a: 1},{a: 1}));
-  assert.ok(equals({a:1, b:2}, {b:2, a:1}));
-  assert.ok(equals({f: true},{f:true}));
-  assert.ok(equals({r: /abc/},{r: /abc/}));
+  assert.ok(equals({},{}).ok());
+  assert.ok(equals({a: 1},{a: 1}).ok());
+  assert.ok(equals({a:1, b:2}, {b:2, a:1}).ok());
+  assert.ok(equals({f: true},{f:true}).ok());
+  assert.ok(equals({r: /abc/},{r: /abc/}).ok());
 
-  assert.ok(!equals({a:1, b:2, c:3}, {b:2, a:1}));
-  assert.ok(!equals({a:1, b:2}, {b:2, a:1, c:3}));
-  assert.ok(!equals({f:true},{f:false}));
-  assert.ok(!equals({r: /abc/},{r: /abcd/}));
+  assert.ok(equals({a:1, b:2, c:3}, {b:2, a:1}).not());
+  assert.ok(equals({a:1, b:2}, {b:2, a:1, c:3}).not());
+  assert.ok(equals({f:true},{f:false}).not());
+  assert.ok(equals({r: /abc/},{r: /abcd/}).not());
 
   var obj1 = {one : 1, two : "II", $three : [1,2,3], four : {a : "AAA"}};
   obj1.foo = function() { console.log("Nope"); };
   var obj2 = {one : 1, two : "II", $three : [1,2,3], four : {a : "AAA"}};
-  assert.ok(equals(obj1, obj2));
-  assert.ok(equals(obj2, obj1));
-  assert.ok(equals({foo:undefined}, {foo:undefined}));
-  assert.ok(!equals({}, {foo:undefined}));
-  assert.ok(!equals({foo:undefined}, {}));
+  assert.ok(equals(obj1, obj2).ok());
+  assert.ok(equals(obj2, obj1).ok());
+  assert.ok(equals({foo:undefined}, {foo:undefined}).ok());
+  assert.ok(equals({}, {foo:undefined}).not());
+  assert.ok(equals({foo:undefined}, {}).not());
 };
 
 module.exports.testArrayEquals = function() {
-  assert.ok(equals([],[]));
-  assert.ok(equals([1,2,3],[1,2,3]));
-  assert.ok(equals([1,2,[3,"IV", "five"]],[1,2,[3,"IV", "five"]]));
+  assert.ok(equals([],[]).ok());
+  assert.ok(equals([1,2,3],[1,2,3]).ok());
+  assert.ok(equals([1,2,[3,"IV", "five"]],[1,2,[3,"IV", "five"]]).ok());
 
-  assert.ok(!equals([],""));
-  assert.ok(!equals([1],[1,2]));
-  assert.ok(!equals([ 1, 'two', [ 'III' ] ],[ 1, 2, [ 'three' ] ]));
-  assert.ok(!equals([ 1, 'two', [ 'III', [ 4 ] ] ],[ 1, 'two', [ 'III', ['IV'] ] ]));
+  assert.ok(equals([],"").not());
+  assert.ok(equals([1],[1,2]).not());
+  assert.ok(equals([ 1, 'two', [ 'III' ] ],[ 1, 2, [ 'three' ] ]).not());
+  assert.ok(equals([ 1, 'two', [ 'III', [ 4 ] ] ],[ 1, 'two', [ 'III', ['IV'] ] ]).not());
 };
 
 function verifyMocksNotOK(mocket) {
