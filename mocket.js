@@ -39,7 +39,7 @@ function equals(obj1, obj2) {
   // which in turn mess around with the prototypes.
   if (obj1 === obj2) return comparePassed;
 
-  if (obj1 !== undefined && obj2 !== undefined && obj1.valueOf() === obj2.valueOf()) return comparePassed;
+  if (obj1 !== undefined && obj2 !== undefined && obj1 !== null && obj2 !== null && obj1.valueOf() === obj2.valueOf()) return comparePassed;
 
   if (obj1 instanceof RegExp && obj2 instanceof RegExp) {
     if (obj1.toString() === obj2.toString()) {

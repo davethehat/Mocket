@@ -53,6 +53,9 @@ module.exports.testObjectEquals = function() {
   assert.ok(equals({foo:undefined}, {foo:undefined}).ok());
   assert.ok(equals({}, {foo:undefined}).not());
   assert.ok(equals({foo:undefined}, {}).not());
+
+  assert.ok(equals(null, 'abc').not());
+  assert.ok(equals({foo: null}, {foo: 'abc'}).not());
 };
 
 module.exports.testArrayEquals = function() {
